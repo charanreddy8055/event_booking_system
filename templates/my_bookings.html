@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Bookings | Event Booking</title>
+<style>
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f3f6fb;
+  margin: 0;
+  padding: 0;
+}
+header {
+  background: #0078d7;
+  color: white;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+h1 {
+  margin: 0;
+  font-size: 22px;
+  cursor: pointer;
+}
+button {
+  background: #0078d7;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover {
+  background: #005fa3;
+}
+.container {
+  width: 90%;
+  max-width: 900px;
+  background: white;
+  margin: 30px auto;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.booking-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 15px;
+  background: #fafafa;
+}
+.ticket-id {
+  background: #0078d7;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+.logout {
+  background: white;
+  color: #0078d7;
+  border-radius: 4px;
+  padding: 6px 10px;
+}
+.logout:hover {
+  background: #e2e6ea;
+}
+.back-btn {
+  background: #6c757d;
+  margin-right: 10px;
+}
+.back-btn:hover {
+  background: #5a6268;
+}
+.attendee-details {
+  background: #e7f3ff;
+  padding: 15px;
+  border-radius: 6px;
+  margin: 15px 0;
+  border-left: 4px solid #0078d7;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 onclick="goHome()">🏠 Event Booking System</h1>
+  <div>
+    <button class="back-btn" onclick="goHome()">← Back to Events</button>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<div class="container">
+  <h2>🎟️ My Bookings</h2>
+  <div id="bookingsContainer">Loading your bookings...</div>
+</div>
+
+<script>
+async function loadMyBookings() {
+  try {
+    const res = await fetch("/api/my-bookings");
+    const data = await res.json();
+    const container = document.getElementById("bookingsContainer");
+    
+    if (!data.length) {
+      container.innerHTML = "<p>You haven't booked any events yet.</p>";
+    } else {
+      container.innerHTML = data.map(booking => `
+        <div class="booking-card">
+          <div class="ticket-id">Ticket: ${booking.ticket_id}</div>
+          <h3>${booking.title}</h3>
+          <p>${booking.description}</p>
+          
+          <!-- EVENT DETAILS -->
+          <p><b>📅 Event Date:</b> ${new Date(booking.date).toLocaleDateString()}</p>
+          <p><b>📍 Location:</b> ${booking.location}</p>
+          
+          <!-- ATTENDEE DETAILS -->
+          <div class="attendee-details">
+            <h4>👤 Attendee Information</h4>
+            <p><b>Full Name:</b> ${booking.attendee_name || 'Not provided'}</p>
+            <p><b>Email:</b> ${booking.attendee_email || 'Not provided'}</p>
+            <p><b>Phone:</b> ${booking.attendee_phone || 'Not provided'}</p>
+            <p><b>Gender:</b> ${booking.attendee_gender || 'Not provided'}</p>
+          </div>
+          
+          <p><b>📅 Booked On:</b> ${new Date(booking.created_at).toLocaleDateString()}</p>
+          <p><b>Status:</b> <span style="color: green;">✅ Confirmed</span></p>
+        </div>
+      `).join('');
+    }
+  } catch (error) {
+    console.error("Error loading bookings:", error);
+    document.getElementById("bookingsContainer").innerHTML = 
+      "<p>Error loading bookings. Please try again.</p>";
+  }
+}
+
+function goHome() {
+  window.location.href = "/";
+}
+
+async function logout() {
+  try {
+    await fetch("/logout");
+    window.location.href = "/";
+  } catch (err) {
+    window.location.href = "/";
+  }
+}
+
+// Load bookings when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  loadMyBookings();
+});
+</script>
+</body>
+</html>

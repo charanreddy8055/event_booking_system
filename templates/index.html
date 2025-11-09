@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Event Booking System</title>
+<style>
+:root {
+  --blue: #0078d7;
+  --light: #f3f6fb;
+  --dark: #1a1a1a;
+  --danger: #dc3545;
+  --success: #28a745;
+}
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--light);
+  color: var(--dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  background: var(--blue);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.home-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.3s;
+  text-decoration: none;
+}
+.home-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+.nav-links {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+.nav-links a:hover {
+  background: rgba(255,255,255,0.2);
+}
+/* NEW: Search input styles */
+#navEventSearch {
+  display: none;
+  width: 250px;
+  padding: 8px 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 20px;
+  font-size: 14px;
+  margin-right: 20px;
+}
+#navEventSearch:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 8px rgba(0, 123, 215, 0.3);
+}
+.main-content {
+  flex: 1;
+  padding: 40px 20px;
+}
+.container {
+  width: 90%;
+  max-width: 1200px;
+  background: white;
+  margin: 0 auto;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+h2 {
+  color: var(--blue);
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 28px;
+}
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+}
+.event-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  background: #fafafa;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.event-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+/* NEW: Highlight style for search matches */
+.event-card.highlighted {
+  border: 2px solid var(--blue);
+  background: #e7f3ff;
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 123, 215, 0.3);
+}
+.form-group {
+  margin-bottom: 15px;
+}
+input, select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+button {
+  background: var(--blue);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+button:hover {
+  background: #005fa3;
+}
+.message {
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+.hidden {
+  display: none;
+}
+.switch-form {
+  text-align: center;
+  margin-top: 20px;
+  color: #666;
+}
+.switch-form a {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+.switch-form a:hover {
+  text-decoration: underline;
+}
+.user-info {
+  background: #e7f3ff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.user-info a {
+  color: #0078d7;
+  text-decoration: none;
+  font-weight: 600;
+}
+.user-info a:hover {
+  text-decoration: underline;
+}
+.role-selection {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+.role-option {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: white;
+}
+.role-option.selected {
+  border-color: var(--blue);
+  background: #e7f3ff;
+  color: var(--blue);
+  font-weight: 600;
+}
+.role-option:hover {
+  border-color: var(--blue);
+}
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+.modal-content {
+  background-color: white;
+  margin: 10% auto;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close:hover {
+  color: black;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.cancel-btn {
+  background: #6c757d;
+}
+.cancel-btn:hover {
+  background: #5a6268;
+}
+.event-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 15px 0;
+}
+.stat-item {
+  background: #e9ecef;
+  padding: 8px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 13px;
+}
+.book-btn {
+  margin-top: auto;
+  width: 100%;
+  padding: 12px;
+}
+.login-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+.admin-tab-content {
+  margin-top: 20px;
+}
+.table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+}
+.users-table, .organizers-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+.users-table th, .organizers-table th {
+  background: #f8f9fa;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #e1e5e9;
+}
+.users-table td, .organizers-table td {
+  padding: 15px;
+  border-bottom: 1px solid #e1e5e9;
+}
+.users-table tr:hover, .organizers-table tr:hover {
+  background: #f8f9fa;
+}
+.simple-form {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+}
+.field-hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+.login-box {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+.login-logo {
+  font-size: 32px;
+  margin-bottom: 10px;
+  color: var(--blue);
+}
+.login-title {
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: 600;
+}
+.login-form .form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+.login-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: 500;
+}
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 10px;
+}
+.login-btn:hover {
+  background: #005fa3;
+}
+.signup-link {
+  margin-top: 25px;
+  color: #666;
+  font-size: 15px;
+}
+.signup-link a {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+.signup-link a:hover {
+  text-decoration: underline;
+}
+.forgot-password {
+  text-align: right;
+  margin-top: 5px;
+}
+.forgot-password a {
+  color: #666;
+  text-decoration: none;
+  font-size: 14px;
+}
+.forgot-password a:hover {
+  color: var(--blue);
+  text-decoration: underline;
+}
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e1e5e9;
+  padding-bottom: 10px;
+}
+.admin-tab {
+  padding: 12px 24px;
+  background: #f8f9fa;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+.admin-tab.active {
+  background: var(--blue);
+  color: white;
+}
+.admin-tab:hover {
+  background: #e9ecef;
+}
+.admin-tab.active:hover {
+  background: #005fa3;
+}
+.users-table, .organizers-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.users-table th, .organizers-table th {
+  background: #f8f9fa;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #e1e5e9;
+}
+.users-table td, .organizers-table td {
+  padding: 15px;
+  border-bottom: 1px solid #e1e5e9;
+}
+.users-table tr:hover, .organizers-table tr:hover {
+  background: #f8f9fa;
+}
+.delete-btn {
+  background: var(--danger);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+.delete-btn:hover {
+  background: #c82333;
+}
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 30px;
+}
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border-left: 4px solid var(--blue);
+}
+.stat-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--blue);
+  margin-bottom: 5px;
+}
+.stat-label {
+  color: #666;
+  font-size: 14px;
+}
+.search-box {
+  margin-bottom: 20px;
+}
+.search-box input {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 16px;
+}
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+}
+.user-role {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.role-user {
+  background: #e7f3ff;
+  color: var(--blue);
+}
+.role-organizer {
+  background: #fff3cd;
+  color: #856404;
+}
+.role-admin {
+  background: #d4edda;
+  color: var(--success);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <a href="#" class="home-btn" onclick="showHome()">🏠 Home</a>
+  </div>
+  <div class="nav-links">
+    <!-- SEARCH BAR ADDED HERE -->
+    <input type="text" id="navEventSearch" placeholder="🔍 Search events..." style="display:none;" onkeyup="searchHomeEvents()">
+    
+    <a href="#" id="myBookingsLink" class="hidden" onclick="showMyBookings()">My Bookings</a>
+    <a href="#" id="adminLink" class="hidden" onclick="showAdmin()">Admin</a>
+    <a href="#" id="loginLink" onclick="showLogin()">Login</a>
+    <a href="#" id="registerLink" onclick="showRegister()">Register</a>
+    <a href="#" id="logoutLink" class="hidden" onclick="logout()">Logout</a>
+  </div>
+</header>
+
+<div class="main-content">
+  <div class="container">
+    <div id="messageBox" class="message hidden"></div>
+    
+    <!-- User Info (shown when logged in) -->
+    <div id="userInfo" class="user-info hidden"></div>
+
+    <!-- HOME -->
+    <div id="homeSection">
+      <h2>🎉 Upcoming Events</h2>
+      <div id="eventsContainer" class="events-grid">Loading events...</div>
+    </div>
+
+    <!-- MY BOOKINGS -->
+    <div id="myBookingsSection" class="hidden">
+      <h2>🎟️ My Bookings</h2>
+      <div id="bookingsContainer" class="events-grid">Loading your bookings...</div>
+    </div>
+
+    <!-- ADMIN SECTION -->
+    <div id="adminSection" class="hidden">
+      <h2>👑 Admin Dashboard</h2>
+      
+      <div class="admin-stats">
+        <div class="stat-card">
+          <div class="stat-number" id="totalUsers">0</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalOrganizers">0</div>
+          <div class="stat-label">Organizers</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalEvents">0</div>
+          <div class="stat-label">Events</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalBookings">0</div>
+          <div class="stat-label">Bookings</div>
+        </div>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="showAdminTab('users')">👥 Users</button>
+        <button class="admin-tab" onclick="showAdminTab('organizers')">🎪 Organizers</button>
+        <button class="admin-tab" onclick="showAdminTab('events')">📅 Events</button>
+      </div>
+
+      <!-- Users Tab -->
+      <div id="usersTab" class="admin-tab-content">
+        <div class="search-box">
+          <input type="text" id="userSearch" placeholder="Search users by name or email..." onkeyup="searchUsers()">
+        </div>
+        <div class="table-container">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <!-- Users will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Organizers Tab -->
+      <div id="organizersTab" class="admin-tab-content hidden">
+        <div class="search-box">
+          <input type="text" id="organizerSearch" placeholder="Search organizers by name or email..." onkeyup="searchOrganizers()">
+        </div>
+        <div class="table-container">
+          <table class="organizers-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Events Created</th>
+                <th>Joined Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="organizersTableBody">
+              <!-- Organizers will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Events Tab -->
+      <div id="eventsTab" class="admin-tab-content hidden">
+        <div class="search-box">
+          <input type="text" id="eventSearch" placeholder="Search events by title..." onkeyup="searchEvents()">
+        </div>
+        <div class="table-container">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Organizer</th>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Seats</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="eventsTableBody">
+              <!-- Events will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFESSIONAL LOGIN PAGE -->
+    <div id="loginSection" class="hidden">
+      <div class="login-container">
+        <div class="login-box">
+          <div class="login-logo">🔐</div>
+          <h2 class="login-title">Sign In to Your Account</h2>
+          
+          <form class="login-form" onsubmit="event.preventDefault(); login();">
+            <div class="form-group">
+              <label for="loginEmail">Email Address</label>
+              <input type="email" id="loginEmail" placeholder="Enter your email" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" placeholder="Enter your password" required>
+              <div class="forgot-password">
+                <a href="#">Forgot password?</a>
+              </div>
+            </div>
+            
+            <button type="submit" class="login-btn">Sign In</button>
+          </form>
+          
+          <div class="signup-link">
+            Don't have an account? <a href="#" onclick="showRegister()">Sign up here</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTER PAGE -->
+    <div id="registerSection" class="hidden">
+      <div class="login-container">
+        <div class="login-box">
+          <div class="login-logo">👤</div>
+          <h2 class="login-title">Create Your Account</h2>
+          
+          <form class="login-form" onsubmit="event.preventDefault(); register();">
+            <div class="form-group">
+              <label for="regName">Full Name</label>
+              <input type="text" id="regName" placeholder="Enter your full name" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="regEmail">Email Address</label>
+              <input type="email" id="regEmail" placeholder="Enter your email" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="regPassword">Password</label>
+              <input type="password" id="regPassword" placeholder="Create a password (min. 6 characters)" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Account Type</label>
+              <div class="role-selection">
+                <div class="role-option selected" data-role="user" onclick="selectRole('user')">
+                  👤 User
+                </div>
+                <div class="role-option" data-role="organizer" onclick="selectRole('organizer')">
+                  🎪 Organizer
+                </div>
+              </div>
+            </div>
+            
+            <button type="submit" class="login-btn">Create Account</button>
+          </form>
+          
+          <div class="signup-link">
+            Already have an account? <a href="#" onclick="showLogin()">Sign in here</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Booking Form Modal -->
+<div id="bookingModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeBookingModal()">&times;</span>
+    <h2 style="text-align: center; margin-bottom: 20px;">🎟️ Book Ticket</h2>
+    <div id="bookingEventInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      <!-- Event info will be loaded here -->
+    </div>
+    
+    <div class="form-group">
+      <input type="text" id="bookingName" placeholder="Full Name *" required>
+    </div>
+    
+    <div class="form-group">
+      <input type="email" id="bookingEmail" placeholder="Email Address *" required>
+      <div class="field-hint">Must match your registered email</div>
+    </div>
+    
+    <div class="form-group">
+      <input type="text" id="bookingPhone" placeholder="Phone Number">
+    </div>
+    
+    <div class="form-group">
+      <select id="bookingGender" required>
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    
+    <input type="hidden" id="bookingEventId">
+    
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeBookingModal()">Cancel</button>
+      <button onclick="confirmBooking()">Confirm Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeDeleteModal()">&times;</span>
+    <h2 style="text-align: center; margin-bottom: 20px; color: var(--danger);">⚠️ Confirm Delete</h2>
+    <p id="deleteMessage" style="text-align: center; margin-bottom: 25px; font-size: 16px;">
+      Are you sure you want to delete this user?
+    </p>
+    
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="delete-btn" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedRole = 'user';
+let currentBookingEvent = null;
+let currentDeleteItem = null;
+let currentDeleteType = null;
+
+// Sample data for admin section (will be populated from API)
+let usersData = [];
+let organizersData = [];
+let eventsData = [];
+// NEW: Global variable to store all events for search
+let allEventsData = [];
+
+function selectRole(role) {
+  selectedRole = role;
+  document.querySelectorAll('.role-option').forEach(option => {
+    if (option.dataset.role === role) {
+      option.classList.add('selected');
+    } else {
+      option.classList.remove('selected');
+    }
+  });
+}
+
+function showHome() {
+  hideAll();
+  document.getElementById("homeSection").classList.remove("hidden");
+  document.getElementById("navEventSearch").style.display = "block"; // Show search bar
+  loadEvents();
+  updateUserInfo();
+}
+
+function showMyBookings() {
+  hideAll();
+  document.getElementById("myBookingsSection").classList.remove("hidden");
+  loadMyBookings();
+}
+
+function showAdmin() {
+  const userRole = sessionStorage.getItem('userRole');
+  
+  if (userRole !== 'admin') {
+    showMessage("Access Denied. Admin privileges required.", true);
+    showHome();
+    return;
+  }
+  
+  hideAll();
+  document.getElementById("adminSection").classList.remove("hidden");
+  loadAdminData();
+}
+function showLogin() {
+  hideAll();
+  document.getElementById("loginSection").classList.remove("hidden");
+  document.getElementById("loginEmail").value = "";
+  document.getElementById("loginPassword").value = "";
+}
+
+function showRegister() {
+  hideAll();
+  document.getElementById("registerSection").classList.remove("hidden");
+  document.getElementById("regName").value = "";
+  document.getElementById("regEmail").value = "";
+  document.getElementById("regPassword").value = "";
+  selectRole('user');
+}
+
+function hideAll() {
+  document.getElementById("homeSection").classList.add("hidden");
+  document.getElementById("myBookingsSection").classList.add("hidden");
+  document.getElementById("adminSection").classList.add("hidden");
+  document.getElementById("loginSection").classList.add("hidden");
+  document.getElementById("registerSection").classList.add("hidden");
+  document.getElementById("navEventSearch").style.display = "none"; // Hide search bar
+  document.getElementById("navEventSearch").value = ""; // Clear search
+}
+
+function showMessage(msg, isError = false) {
+  const box = document.getElementById("messageBox");
+  box.innerText = msg;
+  box.className = isError ? "message error" : "message success";
+  box.classList.remove("hidden");
+  setTimeout(() => box.classList.add("hidden"), 4000);
+}
+
+function updateUserInfo() {
+  const userInfo = document.getElementById("userInfo");
+  const userRole = sessionStorage.getItem('userRole');
+  const userName = sessionStorage.getItem('userName');
+  const userEmail = sessionStorage.getItem('userEmail');
+  
+  if (userName && userRole) {
+    userInfo.innerHTML = `
+      <strong>Welcome, ${userName}!</strong> 
+      You are logged in as <strong>${userRole}</strong>. 
+      ${userRole === 'organizer' ? 'Go to your <a href="/organizer">Organizer Dashboard</a>' : ''}
+      ${userRole === 'admin' ? 'Go to your <a href="#" onclick="showAdmin()">Admin Dashboard</a>' : ''}
+    `;
+    userInfo.classList.remove("hidden");
+    
+    if (userRole === 'user') {
+      document.getElementById("myBookingsLink").classList.remove("hidden");
+    }
+    if (userRole === 'admin') {
+      document.getElementById("adminLink").classList.remove("hidden");
+    }
+  } else {
+    userInfo.classList.add("hidden");
+    document.getElementById("myBookingsLink").classList.add("hidden");
+    document.getElementById("adminLink").classList.add("hidden");
+  }
+}
+
+// ADMIN FUNCTIONS
+function showAdminTab(tabName) {
+  // Hide all tab contents
+  document.querySelectorAll('.admin-tab-content').forEach(tab => {
+    tab.classList.add('hidden');
+  });
+  
+  // Remove active class from all tabs
+  document.querySelectorAll('.admin-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  
+  // Show selected tab and set active
+  document.getElementById(tabName + 'Tab').classList.remove('hidden');
+  event.target.classList.add('active');
+}
+
+async function loadAdminData() {
+  // Check if user is actually admin
+  const userRole = sessionStorage.getItem('userRole');
+  if (userRole !== 'admin') {
+    document.getElementById("adminSection").innerHTML = 
+      "<p style='text-align: center; color: #666; padding: 40px;'>Access Denied. Admin privileges required.</p>";
+    return;
+  }
+
+  try {
+    // Load users with error handling
+    const usersRes = await fetch("/api/admin/users");
+    if (!usersRes.ok) {
+      throw new Error(`Failed to load users: ${usersRes.status}`);
+    }
+    usersData = await usersRes.json();
+    
+    // Load organizers with error handling
+    const organizersRes = await fetch("/api/admin/organizers");
+    if (!organizersRes.ok) {
+      throw new Error(`Failed to load organizers: ${organizersRes.status}`);
+    }
+    organizersData = await organizersRes.json();
+    
+    // Load events with error handling
+    const eventsRes = await fetch("/api/admin/events");
+    if (!eventsRes.ok) {
+      throw new Error(`Failed to load events: ${eventsRes.status}`);
+    }
+    eventsData = await eventsRes.json();
+    
+    // Update stats
+    document.getElementById('totalUsers').textContent = usersData.length;
+    document.getElementById('totalOrganizers').textContent = organizersData.length;
+    document.getElementById('totalEvents').textContent = eventsData.length;
+    
+    // Get total bookings with error handling
+    try {
+      const bookingsRes = await fetch("/api/admin/bookings-count");
+      if (bookingsRes.ok) {
+        const bookingsData = await bookingsRes.json();
+        document.getElementById('totalBookings').textContent = bookingsData.count;
+      } else {
+        document.getElementById('totalBookings').textContent = '0';
+      }
+    } catch (bookingsError) {
+      console.error("Bookings count error:", bookingsError);
+      document.getElementById('totalBookings').textContent = '0';
+    }
+    
+    // Load tables
+    loadUsersTable();
+    loadOrganizersTable();
+    loadEventsTable();
+    
+  } catch (error) {
+    console.error("Error loading admin data:", error);
+    showMessage("Error loading admin data: " + error.message, true);
+    
+    // Set default values on error
+    document.getElementById('totalUsers').textContent = '0';
+    document.getElementById('totalOrganizers').textContent = '0';
+    document.getElementById('totalEvents').textContent = '0';
+    document.getElementById('totalBookings').textContent = '0';
+  }
+}
+function loadUsersTable() {
+  const tbody = document.getElementById('usersTableBody');
+  tbody.innerHTML = '';
+  
+  if (usersData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-data">No users found</td></tr>';
+    return;
+  }
+  
+  usersData.forEach(user => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${user.id}</td>
+      <td>${user.name}</td>
+      <td>${user.email}</td>
+      <td><span class="user-role role-${user.role}">${user.role}</span></td>
+      <td>${new Date(user.created_at).toLocaleDateString()}</td>
+      <td>
+        <button class="delete-btn" onclick="openDeleteModal(${user.id}, 'user', '${user.name}')">
+          Delete
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function loadOrganizersTable() {
+  const tbody = document.getElementById('organizersTableBody');
+  tbody.innerHTML = '';
+  
+  if (organizersData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-data">No organizers found</td></tr>';
+    return;
+  }
+  
+  organizersData.forEach(organizer => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${organizer.id}</td>
+      <td>${organizer.name}</td>
+      <td>${organizer.email}</td>
+      <td>${organizer.events_count || 0} events</td>
+      <td>${new Date(organizer.created_at).toLocaleDateString()}</td>
+      <td>
+        <button class="delete-btn" onclick="openDeleteModal(${organizer.id}, 'organizer', '${organizer.name}')">
+          Delete
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function loadEventsTable() {
+  const tbody = document.getElementById('eventsTableBody');
+  tbody.innerHTML = '';
+  
+  if (eventsData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="no-data">No events found</td></tr>';
+    return;
+  }
+  
+  eventsData.forEach(event => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${event.id}</td>
+      <td>${event.title}</td>
+      <td>${event.organizer_name}</td>
+      <td>${new Date(event.date).toLocaleDateString()}</td>
+      <td>${event.location}</td>
+      <td>${event.seats}</td>
+      <td><span class="user-role ${event.status === 'approved' ? 'role-user' : 'role-organizer'}">${event.status}</span></td>
+      <td>
+        <button class="delete-btn" onclick="openDeleteModal(${event.id}, 'event', '${event.title}')">
+          Delete
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function searchUsers() {
+  const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+  const filteredUsers = usersData.filter(user => 
+    user.name.toLowerCase().includes(searchTerm) || 
+    user.email.toLowerCase().includes(searchTerm)
+  );
+  
+  const tbody = document.getElementById('usersTableBody');
+  tbody.innerHTML = '';
+  
+  if (filteredUsers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-data">No users found matching your search</td></tr>';
+    return;
+  }
+  
+  filteredUsers.forEach(user => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${user.id}</td>
+      <td>${user.name}</td>
+      <td>${user.email}</td>
+      <td><span class="user-role role-${user.role}">${user.role}</span></td>
+      <td>${new Date(user.created_at).toLocaleDateString()}</td>
+      <td>
+        <button class="delete-btn" onclick="openDeleteModal(${user.id}, 'user', '${user.name}')">
+          Delete
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function searchOrganizers() {
+  const searchTerm = document.getElementById('organizerSearch').value.toLowerCase();
+  const filteredOrganizers = organizersData.filter(organizer => 
+    organizer.name.toLowerCase().includes(searchTerm) || 
+    organizer.email.toLowerCase().includes(searchTerm)
+  );
+  
+  const tbody = document.getElementById('organizersTableBody');
+  tbody.innerHTML = '';
+  
+  if (filteredOrganizers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-data">No organizers found matching your search</td></tr>';
+    return;
+  }
+  
+  filteredOrganizers.forEach(organizer => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${organizer.id}</td>
+      <td>${organizer.name}</td>
+      <td>${organizer.email}</td>
+      <td>${organizer.events_count || 0} events</td>
+      <td>${new Date(organizer.created_at).toLocaleDateString()}</td>
+      <td>
+        <button class="delete-btn" onclick="openDeleteModal(${organizer.id}, 'organizer', '${organizer.name}')">
+          Delete
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function searchEvents() {
+  const searchTerm = document.getElementById('eventSearch').value.toLowerCase();
+  const filteredEvents = eventsData.filter(event => 
+    event.title.toLowerCase().includes(searchTerm)
+  );
+  
+  const tbody = document.getElementById('eventsTableBody');
+  tbody.innerHTML = '';
+  
+  if (filteredEvents.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="no-data">No events found matching your search</td></tr>';
+    return;
+  }
+  
+  filteredEvents.forEach(event => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${event.id}</td>
+      <td>${event.title}</td>
+      <td>${event.organizer_name}</td>
+      <td>${new Date(event.date).toLocaleDateString()}</td>
+      <td>${event.location}</td>
+      <td>${event.seats}</td>
+      <td><span class="user-role ${event.status === 'approved' ? 'role-user' : 'role-organizer'}">${event.status}</span></td>
+      <td>
+        <button class="delete-btn" onclick="openDeleteModal(${event.id}, 'event', '${event.title}')">
+          Delete
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function openDeleteModal(id, type, name) {
+  currentDeleteItem = id;
+  currentDeleteType = type;
+  
+  const message = `Are you sure you want to delete ${type} "${name}"? This action cannot be undone.`;
+  document.getElementById('deleteMessage').textContent = message;
+  document.getElementById('deleteModal').style.display = 'block';
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+  currentDeleteItem = null;
+  currentDeleteType = null;
+}
+
+async function confirmDelete() {
+  try {
+    const res = await fetch(`/api/admin/delete-${currentDeleteType}/${currentDeleteItem}`, {
+      method: 'DELETE'
+    });
+    
+    if (res.ok) {
+      showMessage(`${currentDeleteType.charAt(0).toUpperCase() + currentDeleteType.slice(1)} deleted successfully`);
+      loadAdminData(); // Refresh data
+    } else {
+      showMessage('Error deleting item', true);
+    }
+  } catch (error) {
+    showMessage('Error deleting item', true);
+  }
+  
+  closeDeleteModal();
+}
+
+// EVENT FUNCTIONS (from your previous code)
+async function loadEvents() {
+  try {
+    const res = await fetch("/api/events");
+    const data = await res.json();
+    allEventsData = data; // Store events globally for search
+    displayEvents(allEventsData); // Display all events initially
+  } catch (error) {
+    console.error("Error loading events:", error);
+    document.getElementById("eventsContainer").innerHTML = 
+      "<p style='text-align: center; color: #666; grid-column: 1 / -1;'>Error loading events. Please try again.</p>";
+  }
+}
+
+// NEW: Function to display events with highlighting
+function displayEvents(events, searchTerm = '') {
+  const container = document.getElementById("eventsContainer");
+  
+  if (!events.length) {
+    container.innerHTML = "<p style='text-align: center; color: #666; grid-column: 1 / -1;'>No events available at the moment. Check back later!</p>";
+    return;
+  }
+  
+  container.innerHTML = events.map(ev => {
+    const isMatch = searchTerm && ev.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const highlightClass = isMatch ? 'highlighted' : '';
+    
+    return `
+      <div class="event-card ${highlightClass}">
+        <h3 style="margin: 0 0 10px 0; color: #333; font-size: 18px;">${ev.title}</h3>
+        <p style="color: #666; margin: 0 0 15px 0; font-size: 14px; line-height: 1.4;">${ev.description}</p>
+        
+        <div class="event-stats">
+          <div class="stat-item">
+            <strong>📅 Date</strong><br>
+            ${new Date(ev.date).toLocaleDateString()}
+          </div>
+          <div class="stat-item">
+            <strong>📍 Location</strong><br>
+            ${ev.location}
+          </div>
+          <div class="stat-item">
+            <strong>🎫 Total Seats</strong><br>
+            ${ev.seats}
+          </div>
+          <div class="stat-item">
+            <strong>✅ Available</strong><br>
+            ${ev.available_seats || ev.seats}
+          </div>
+        </div>
+        
+        <button class="book-btn" onclick="openBookingForm(${ev.id}, '${ev.title.replace(/'/g, "\\'")}', '${ev.date}', '${ev.location.replace(/'/g, "\\'")}', ${ev.available_seats || ev.seats})">
+          Book Now
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+// NEW: Search function for home page
+function searchHomeEvents() {
+  const searchTerm = document.getElementById('navEventSearch').value.toLowerCase().trim();
+  
+  if (!searchTerm) {
+    displayEvents(allEventsData); // Show all without highlighting
+    return;
+  }
+  
+  displayEvents(allEventsData, searchTerm); // Show all with highlighting
+}
+
+async function loadMyBookings() {
+  try {
+    const res = await fetch("/api/my-bookings");
+    const data = await res.json();
+    const container = document.getElementById("bookingsContainer");
+    
+    if (!data.length) {
+      container.innerHTML = "<p style='text-align: center; color: #666; grid-column: 1 / -1;'>You haven't booked any events yet.</p>";
+    } else {
+      container.innerHTML = data.map(booking => `
+        <div class="event-card">
+          <div style="background: #0078d7; color: white; padding: 8px 12px; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 10px;">
+            Ticket: ${booking.ticket_id}
+          </div>
+          <h3 style="margin: 0 0 10px 0; color: #333;">${booking.title}</h3>
+          <p style="color: #666; margin: 0 0 15px 0;">${booking.description}</p>
+          <p style="margin: 5px 0;"><b>📅 Event Date:</b> ${new Date(booking.date).toLocaleDateString()}</p>
+          <p style="margin: 5px 0;"><b>📍 Location:</b> ${booking.location}</p>
+          <p style="margin: 5px 0;"><b>👤 Attendee:</b> ${booking.attendee_name || 'N/A'}</p>
+          <p style="margin: 5px 0;"><b>📧 Email:</b> ${booking.attendee_email || 'N/A'}</p>
+          <p style="margin: 5px 0;"><b>📞 Phone:</b> ${booking.attendee_phone || 'N/A'}</p>
+          <p style="margin: 5px 0;"><b>⚧️ Gender:</b> ${booking.attendee_gender || 'N/A'}</p>
+          <p style="margin: 5px 0;"><b>📅 Booked On:</b> ${new Date(booking.created_at).toLocaleDateString()}</p>
+        </div>
+      `).join('');
+    }
+  } catch (error) {
+    console.error("Error loading bookings:", error);
+    container.innerHTML = "<p style='text-align: center; color: #666; grid-column: 1 / -1;'>Error loading bookings. Please try again.</p>";
+  }
+}
+
+function openBookingForm(eventId, eventTitle, eventDate, eventLocation, availableSeats) {
+  const userEmail = sessionStorage.getItem('userEmail');
+  
+  if (!userEmail) {
+    showMessage("Please sign in to book events", true);
+    showLogin(); // REDIRECT TO PROFESSIONAL LOGIN PAGE
+    return;
+  }
+
+  currentBookingEvent = eventId;
+  
+  // Populate event info
+  document.getElementById('bookingEventInfo').innerHTML = `
+    <h4 style="margin: 0 0 8px 0; color: #0078d7;">${eventTitle}</h4>
+    <p style="margin: 4px 0; font-size: 14px;"><b>Date:</b> ${new Date(eventDate).toLocaleDateString()}</p>
+    <p style="margin: 4px 0; font-size: 14px;"><b>Location:</b> ${eventLocation}</p>
+    <p style="margin: 4px 0; font-size: 14px;"><b>Available Seats:</b> ${availableSeats}</p>
+  `;
+  
+  // Pre-fill with user data if available
+  document.getElementById('bookingEventId').value = eventId;
+  document.getElementById('bookingEmail').value = userEmail;
+  
+  // Clear other fields
+  document.getElementById('bookingName').value = '';
+  document.getElementById('bookingPhone').value = '';
+  document.getElementById('bookingGender').value = '';
+  
+  // Show modal
+  document.getElementById('bookingModal').style.display = 'block';
+}
+
+function closeBookingModal() {
+  document.getElementById('bookingModal').style.display = 'none';
+  currentBookingEvent = null;
+}
+
+async function confirmBooking() {
+  const eventId = document.getElementById('bookingEventId').value;
+  const name = document.getElementById('bookingName').value.trim();
+  const email = document.getElementById('bookingEmail').value.trim();
+  const phone = document.getElementById('bookingPhone').value.trim();
+  const gender = document.getElementById('bookingGender').value;
+  const userEmail = sessionStorage.getItem('userEmail');
+
+  // Validation
+  if (!name || !email || !gender) {
+    showMessage("Please fill all required fields", true);
+    return;
+  }
+
+  // Check if booking email matches logged-in user email
+  if (email !== userEmail) {
+    showMessage("Booking email must match your registered email address", true);
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/book", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        event_id: parseInt(eventId),
+        attendee_name: name,
+        attendee_email: email,
+        attendee_phone: phone,
+        attendee_gender: gender
+      })
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      showMessage(`✅ ${data.message} - Ticket ID: ${data.ticket_id}`);
+      closeBookingModal();
+      loadEvents(); // Refresh events to update available seats
+    } else {
+      showMessage(data.message, true);
+    }
+  } catch (error) {
+    showMessage("Booking failed. Please try again.", true);
+  }
+}
+
+// LOGIN FUNCTION
+async function login() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+
+  if (!email || !password) {
+    showMessage("Please fill all fields", true);
+    return;
+  }
+
+  try {
+    const res = await fetch("/login", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({email, password})
+    });
+
+    const data = await res.json();
+    
+    if (!res.ok) {
+      showMessage(data.message || "Invalid credentials", true);
+      return;
+    }
+
+    sessionStorage.setItem('userId', data.user_id);
+    sessionStorage.setItem('userRole', data.role);
+    sessionStorage.setItem('userName', data.name);
+    sessionStorage.setItem('userEmail', data.email || email);
+
+    document.getElementById("loginLink").classList.add("hidden");
+    document.getElementById("registerLink").classList.add("hidden");
+    document.getElementById("logoutLink").classList.remove("hidden");
+
+    showMessage(`Welcome back, ${data.name}!`);
+    
+    if (data.redirect) {
+      window.location.href = data.redirect;
+    } else {
+      showHome();
+    }
+  } catch (error) {
+    showMessage("Login failed. Please try again.", true);
+  }
+}
+
+// REGISTER FUNCTION
+async function register() {
+  const name = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const password = document.getElementById("regPassword").value.trim();
+
+  if (!name || !email || !password) {
+    showMessage("Please fill all fields", true);
+    return;
+  }
+
+  if (password.length < 6) {
+    showMessage("Password must be at least 6 characters", true);
+    return;
+  }
+
+  try {
+    const res = await fetch("/register", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({name, email, password, role: selectedRole})
+    });
+
+    const data = await res.json();
+    
+    if (res.ok) {
+      showMessage(data.message);
+      // Auto login after registration
+      document.getElementById("loginEmail").value = email;
+      document.getElementById("loginPassword").value = password;
+      await login();
+    } else {
+      showMessage(data.message, true);
+    }
+  } catch (error) {
+    showMessage("Registration failed. Please try again.", true);
+  }
+}
+
+// LOGOUT FUNCTION
+async function logout() {
+  try {
+    await fetch("/logout");
+    sessionStorage.clear();
+    document.getElementById("loginLink").classList.remove("hidden");
+    document.getElementById("registerLink").classList.remove("hidden");
+    document.getElementById("logoutLink").classList.add("hidden");
+    document.getElementById("myBookingsLink").classList.add("hidden");
+    document.getElementById("adminLink").classList.add("hidden");
+    document.getElementById("userInfo").classList.add("hidden");
+    showMessage("Logged out successfully");
+    showHome();
+  } catch (error) {
+    showMessage("Logout failed", true);
+  }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  const bookingModal = document.getElementById('bookingModal');
+  const deleteModal = document.getElementById('deleteModal');
+  
+  if (event.target === bookingModal) {
+    closeBookingModal();
+  }
+  if (event.target === deleteModal) {
+    closeDeleteModal();
+  }
+}
+
+// Check if user is already logged in on page load
+document.addEventListener('DOMContentLoaded', function() {
+  if (sessionStorage.getItem('userId')) {
+    document.getElementById("loginLink").classList.add("hidden");
+    document.getElementById("registerLink").classList.add("hidden");
+    document.getElementById("logoutLink").classList.remove("hidden");
+    
+    const userRole = sessionStorage.getItem('userRole');
+    if (userRole === 'user') {
+      document.getElementById("myBookingsLink").classList.remove("hidden");
+    }
+    if (userRole === 'admin') {
+      document.getElementById("adminLink").classList.remove("hidden");
+    }
+  }
+  showHome();
+});
+</script>
+</body>
+</html>

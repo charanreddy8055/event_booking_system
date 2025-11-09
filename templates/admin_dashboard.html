@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard - Event Management</title>
+  <style>
+    :root {
+      --blue: #0078d7;
+      --light: #f3f6fb;
+      --dark: #1a1a1a;
+      --danger: #dc3545;
+      --success: #28a745;
+      --muted: #6c757d;
+    }
+    body { font-family: "Segoe UI", Arial, sans-serif; background: var(--light); margin:0; color:var(--dark); }
+    header { background: var(--blue); color: white; padding: 15px 30px; display:flex; justify-content:space-between; align-items:center; }
+    h1 { margin:0; font-size:22px; }
+    .logout { background: white; color: var(--blue); border-radius: 4px; padding: 6px 10px; border:none; cursor:pointer; }
+    .logout:hover { background:#e2e6ea; }
+    .container { width:90%; max-width:1200px; background:white; margin:30px auto; padding:25px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+    .stats { display:grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap:15px; margin-bottom:20px; }
+    .stat-card { background:var(--blue); color:white; padding:15px; border-radius:8px; text-align:center; }
+    .stat-number { font-size:24px; font-weight:bold; margin:5px 0; }
+    .section { margin-bottom:30px; }
+    .section h2 { color:var(--blue); border-bottom:2px solid var(--blue); padding-bottom:8px; margin:0 0 12px 0; }
+    .event-card, .booking-card { border:1px solid #ccc; border-radius:6px; padding:15px; margin-bottom:12px; background:#fafafa; }
+    .event-actions { margin-top:10px; padding-top:10px; border-top:1px solid #ddd; display:flex; gap:8px; flex-wrap:wrap; }
+    button { background:var(--blue); color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:14px; }
+    button:hover { background:#005fa3; }
+    button.reject { background:var(--danger); }
+    button.reject:hover { background:#c82333; }
+    .status { padding:4px 8px; border-radius:4px; font-weight:bold; font-size:13px; }
+    .pending { background:#fff3cd; color:#856404; }
+    .approved { background:#d4edda; color:#155724; }
+    .rejected { background:#f8d7da; color:#721c24; }
+    .message { padding:10px; border-radius:4px; margin:10px 0; display:none; }
+    .success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+    .error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+    .back-btn { background:var(--muted); color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; margin-bottom:12px; }
+    .back-btn:hover { background:#5a6268; }
+    /* Users/Organizers table */
+    .table-container { overflow-x:auto; border-radius:8px; border:1px solid #e1e5e9; }
+    table { width:100%; border-collapse:collapse; background:white; }
+    th, td { padding:12px; text-align:left; border-bottom:1px solid #e1e5e9; }
+    th { background:#f8f9fa; font-weight:600; }
+    .delete-btn { background:var(--danger); color:white; padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
+    .delete-btn:hover { background:#c82333; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard - Event Management</h1>
+    <div>
+      <button onclick="showUsers()">👥 Users</button>
+      <button onclick="showOrganizers()">🎪 Organizers</button>
+      <button class="logout" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="message" class="message"></div>
+
+    <!-- MAIN ADMIN CONTENT (stats, pending events, all events, bookings) -->
+    <div id="adminMain">
+      <!-- Statistics -->
+      <div class="stats">
+        <div class="stat-card">
+          <div>Total Events</div>
+          <div class="stat-number" id="totalEvents">0</div>
+        </div>
+        <div class="stat-card">
+          <div>Pending Approval</div>
+          <div class="stat-number" id="pendingEvents">0</div>
+        </div>
+        <div class="stat-card">
+          <div>Total Bookings</div>
+          <div class="stat-number" id="totalBookings">0</div>
+        </div>
+      </div>
+
+      <!-- Pending Events -->
+      <div class="section">
+        <h2>📋 Events Pending Approval</h2>
+        <div id="pendingEventsContainer">Loading pending events...</div>
+      </div>
+
+      <!-- All Events -->
+      <div class="section">
+        <h2>📅 All Events</h2>
+        <div id="allEventsContainer">Loading all events...</div>
+      </div>
+
+      <!-- Recent Bookings -->
+      <div class="section">
+        <h2>🎟️ Recent Bookings</h2>
+        <div id="bookingsContainer">Loading bookings...</div>
+      </div>
+    </div>
+
+    <!-- USERS SECTION (hidden by default) -->
+    <div id="usersSection" style="display:none;">
+      <button class="back-btn" onclick="backToAdmin()">⬅️ Back to Dashboard</button>
+      <h2>👥 Users</h2>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="5" style="padding:20px;text-align:center;color:#666;">Loading users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ORGANIZERS SECTION (hidden by default) -->
+    <div id="organizersSection" style="display:none;">
+      <button class="back-btn" onclick="backToAdmin()">⬅️ Back to Dashboard</button>
+      <h2>🎪 All Organizers</h2>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+          <tbody id="organizersTableBody">
+            <tr><td colspan="5" style="padding:20px;text-align:center;color:#666;">Loading organizers...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Helper message
+    function showMessage(msg, type='success') {
+      const el = document.getElementById('message');
+      el.textContent = msg;
+      el.className = 'message ' + (type === 'error' ? 'error' : 'success');
+      el.style.display = 'block';
+      setTimeout(()=> el.style.display = 'none', 4000);
+    }
+
+    // Navigation helpers
+    function hideAllViews() {
+      document.getElementById('adminMain').style.display = 'none';
+      document.getElementById('usersSection').style.display = 'none';
+      document.getElementById('organizersSection').style.display = 'none';
+    }
+    function backToAdmin() {
+      hideAllViews();
+      document.getElementById('adminMain').style.display = 'block';
+      // refresh data to reflect changes
+     loadAdminData(); 
+    }
+
+    // Show Users / Organizers
+    async function showUsers() {
+      hideAllViews();
+      document.getElementById('usersSection').style.display = 'block';
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:#666;">Loading users...</td></tr>`;
+      try {
+        const res = await fetch('/api/admin/users');
+        if (!res.ok) throw new Error('Failed to load users');
+        const users = await res.json();
+        if (!users.length) {
+          tbody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:#666;">No users found</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td>${u.id}</td>
+            <td>${escapeHtml(u.name || '')}</td>
+            <td>${escapeHtml(u.email || '')}</td>
+            <td>${escapeHtml(u.role || '')}</td>
+            <td><button class="delete-btn" onclick="deleteEntity(${u.id}, 'user')">Delete</button></td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:#666;">Error loading users</td></tr>`;
+        console.error(e);
+      }
+    }
+
+    async function showOrganizers() {
+      hideAllViews();
+      document.getElementById('organizersSection').style.display = 'block';
+      const tbody = document.getElementById('organizersTableBody');
+      tbody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:#666;">Loading organizers...</td></tr>`;
+      try {
+        const res = await fetch('/api/admin/organizers');
+        if (!res.ok) throw new Error('Failed to load organizers');
+        const orgs = await res.json();
+        if (!orgs.length) {
+          tbody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:#666;">No organizers found</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = orgs.map(o => `
+          <tr>
+            <td>${o.id}</td>
+            <td>${escapeHtml(o.name || '')}</td>
+            <td>${escapeHtml(o.email || '')}</td>
+            <td>${escapeHtml(o.role || '')}</td>
+            <td><button class="delete-btn" onclick="deleteEntity(${o.id}, 'organizer')">Delete</button></td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:#666;">Error loading organizers</td></tr>`;
+        console.error(e);
+      }
+    }
+
+    // Delete user/organizer
+    async function deleteEntity(id, type) {
+      if (!confirm(`Are you sure you want to delete this ${type}? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`/api/admin/delete-${type}/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Delete failed');
+        showMessage(data.message || 'Deleted');
+        if (type === 'user') showUsers(); else showOrganizers();
+      } catch (e) {
+        console.error(e);
+        showMessage(e.message || 'Delete failed', 'error');
+      }
+    }
+
+    // Utility to escape HTML for safety in table cells
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ---- Admin core: load events and bookings (original behavior preserved) ----
+    async function loadAdminData() {
+      try {
+        // events
+        const eventsRes = await fetch('/api/admin/events');
+        const events = eventsRes.ok ? await eventsRes.json() : [];
+        // bookings
+        const bookingsRes = await fetch('/api/admin/bookings');
+        const bookings = bookingsRes.ok ? await bookingsRes.json() : [];
+
+        updateStatistics(events, bookings);
+        displayPendingEvents(events);
+        displayAllEvents(events);
+        displayBookings(bookings);
+      } catch (e) {
+        console.error('Error loading admin data', e);
+        showMessage('Error loading admin data', 'error');
+      }
+    }
+
+    function updateStatistics(events, bookings) {
+      document.getElementById('totalEvents').textContent = (events || []).length;
+      document.getElementById('pendingEvents').textContent = (events || []).filter(e => e.status === 'pending').length;
+      document.getElementById('totalBookings').textContent = (bookings || []).length;
+    }
+
+    function displayPendingEvents(events) {
+      const pending = (events || []).filter(e => e.status === 'pending');
+      const container = document.getElementById('pendingEventsContainer');
+      if (!pending.length) {
+        container.innerHTML = '<p>No events pending approval.</p>';
+        return;
+      }
+      container.innerHTML = pending.map(ev => `
+        <div class="event-card">
+          <h3>${escapeHtml(ev.title || '')}</h3>
+          <p><strong>Organizer:</strong> ${escapeHtml(ev.organizer_name || 'Unknown')}</p>
+          <p><strong>Description:</strong> ${escapeHtml(ev.description || '')}</p>
+          <p><strong>📅 Date:</strong> ${new Date(ev.date).toLocaleDateString()} | <strong>📍 Location:</strong> ${escapeHtml(ev.location || '')}</p>
+          <p><strong>🎫 Seats:</strong> ${ev.seats || 0} | <strong>📊 Booked:</strong> ${ev.tickets_booked || 0}</p>
+          <p><strong>Status:</strong> <span class="status ${ev.status}">${(ev.status || '').toUpperCase()}</span></p>
+          <div class="event-actions">
+            <button onclick="updateEventStatus(${ev.id}, 'approved')">✅ Approve Event</button>
+            <button class="reject" onclick="updateEventStatus(${ev.id}, 'rejected')">❌ Reject Event</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function displayAllEvents(events) {
+      const container = document.getElementById('allEventsContainer');
+      if (!(events || []).length) {
+        container.innerHTML = '<p>No events found.</p>';
+        return;
+      }
+      container.innerHTML = (events || []).map(ev => `
+        <div class="event-card">
+          <h3>${escapeHtml(ev.title || '')}</h3>
+          <p><strong>Organizer:</strong> ${escapeHtml(ev.organizer_name || 'Unknown')}</p>
+          <p>${escapeHtml(ev.description || '')}</p>
+          <p><strong>📅 Date:</strong> ${new Date(ev.date).toLocaleDateString()} | <strong>📍 Location:</strong> ${escapeHtml(ev.location || '')}</p>
+          <p><strong>🎫 Seats:</strong> ${ev.seats || 0} | <strong>📊 Booked:</strong> ${ev.tickets_booked || 0}</p>
+          <p><strong>Status:</strong> <span class="status ${ev.status}">${(ev.status || '').toUpperCase()}</span></p>
+        </div>
+      `).join('');
+    }
+
+    function displayBookings(bookings) {
+      const container = document.getElementById('bookingsContainer');
+      if (!(bookings || []).length) {
+        container.innerHTML = '<p>No bookings found.</p>';
+        return;
+      }
+      container.innerHTML = (bookings || []).map(b => `
+        <div class="booking-card">
+          <p><strong>Ticket:</strong> ${escapeHtml(b.ticket_id || '')}</p>
+          <p><strong>User:</strong> ${escapeHtml(b.user_name || b.user_email || '')}</p>
+          <p><strong>Event:</strong> ${escapeHtml(b.event_title || '')} — ${new Date(b.event_date).toLocaleDateString()}</p>
+        </div>
+      `).join('');
+    }
+
+    // Approve/reject event
+    async function updateEventStatus(eventId, status) {
+      try {
+        const res = await fetch('/api/admin/update', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ event_id: eventId, status })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Update failed');
+        showMessage(data.message || `Event ${status}`);
+        loadAdminData();
+      } catch (e) {
+        console.error(e);
+        showMessage(e.message || 'Update failed', 'error');
+      }
+    }
+
+    // Logout helper: redirect to main app logout
+   async function logout() {
+  try {
+    await fetch("/logout");
+    sessionStorage.clear(); // Add this line
+    window.location.href = "/";
+  } catch (err) {
+    console.error("Logout error:", err);
+    window.location.href = "/";
+  }
+}
+
+    // Load initial admin data when this page is shown
+    document.addEventListener('DOMContentLoaded', function() {
+      // Start by showing main admin view
+      hideAllViews();
+      document.getElementById('adminMain').style.display = 'block';
+      // fetch data
+      loadAdminData();
+    });
+  </script>
+</body>
+</html>
